@@ -9,6 +9,10 @@ import androidx.compose.ui.window.application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import java.io.File
 
 fun main() = application {
     Window(
@@ -20,13 +24,20 @@ fun main() = application {
             mutableStateOf("")
         }
 
-        BasicTextField(
-            value = text,
-            onValueChange = {
-                text = it
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+        Column {
+            Button(onClick = {
+                File("memo.txt").writeText(text)
+            })
+            { Text("保存") }
 
+            BasicTextField(
+                value = text,
+                onValueChange = {
+                    text = it
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+
+        }
     }
 }
