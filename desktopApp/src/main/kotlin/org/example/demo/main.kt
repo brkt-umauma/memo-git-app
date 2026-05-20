@@ -12,7 +12,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Button
 import androidx.compose.material.Text
-import java.io.File
+import java.awt.FileDialog
+import java.awt.Frame
+
+
+fun saveAs(text: String){
+    val fileDialog = FileDialog(
+    null as Frame?,
+    "名前を付けて保存",
+    FileDialog.SAVE
+    )
+
+    fileDialog.isVisible = true
+
+    val directory = fileDialog.directory
+    val fileName = fileDialog.file
+
+    if (directory != null && fileName != null) {
+
+        val fullPath = directory + fileName
+
+       FileSave.saveText(fullPath, text)
+
+    }
+}
+
+
+
 
 fun main() = application {
     Window(
@@ -26,7 +52,7 @@ fun main() = application {
 
         Column {
             Button(onClick = {
-                File("memo.txt").writeText(text)
+                saveAs(text)
             })
             { Text("保存") }
 
@@ -37,7 +63,6 @@ fun main() = application {
                 },
                 modifier = Modifier.fillMaxSize()
             )
-
         }
     }
 }
