@@ -18,7 +18,7 @@ object FIleLoad {
         fileDialog.isVisible = true
 
         val directory = fileDialog.directory
-        val fileName = fileDialog.file
+        val fileName = fileDialog.file ?: return null
 
         val fullPath =
             File(directory, fileName).path
