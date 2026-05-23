@@ -4,7 +4,7 @@ import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
 
-object FIleLoad {
+object FileLoad {
 
     // ファイルの呼び出し＋読み込み
     fun openFile(): Pair<String, String>? {
