@@ -24,37 +24,31 @@ fun main() = application {
         title = "Memo App",
     ) {
 
-        // text = 中身
-        var text by remember {
-            mutableStateOf("")
-        }
-
-        // currentFilePath = saveAs関数を実行したときに生成されるパス
-        var currentFilePath by remember {
-            mutableStateOf<String?>(null)
+        var doc by remember {
+            mutableStateOf(Document("", null))
         }
 
         Column {
 
             Row {
                 Button(onClick = {
-                    val savedPath = saveAs(text)
+                    val savedPath = saveAs(doc.text)
 
                     // パスを上書き：「ドキュメント」状態として記憶する
                     if (savedPath != null) {
-                        currentFilePath = savedPath
-                        println(currentFilePath.toString())
+                        doc = doc.copy(currentFilePath = savedPath)
+                        println(doc.currentFilePath.toString())
                     }
                 })
                 { Text("保存") }
 
 
                 Button(onClick = {
-                    val savedPath = overwriteSave(currentFilePath, text)
+                    val savedPath = overwriteSave(doc.currentFilePath, doc.text)
 
                     // 上書き保存: currentFilePathにsavedPathを代入
                     if (savedPath != null) {
-                        currentFilePath = savedPath
+                        doc = doc.copy(currentFilePath = savedPath)
                     }
                 })
                 { Text("上書き保存") }
@@ -64,15 +58,14 @@ fun main() = application {
                     val result = openFile()
 
                     // 読み込み
-                    // -> 履歴クリア
                     // Pairの一つ目の戻り値をテキスト内容、
                     // 二つ目の戻り値をパスとして状態に持つ
                     if (result != null) {
 
-                        HistoryManager.clearHistory()
-
-                        text = result.first
-                        currentFilePath = result.second
+                        doc = Document(
+                            text = result.first,
+                            currentFilePath = result.second
+                        )
 
                         println("FILE OPENED")
                         println(result.second)
@@ -81,22 +74,22 @@ fun main() = application {
                 { Text("開く") }
 
                 Button(onClick = {
-                    val undoneText = HistoryManager.undo(text)
+                    val undoneText = HistoryManager.undo(doc)
 
                     // undoneTextがnullでない場合に履歴を更新
                     // つまりtextに代入
                     if (undoneText != null) {
-                        text = undoneText
+                        doc = doc.copy(text = undoneText)
                     }
                 })
                 {Text("取り消し")}
 
                 Button(onClick = {
-                    val redoneText = HistoryManager.redo(text)
+                    val redoneText = HistoryManager.redo(doc)
 
                     // redoneTextがnullでない場合に履歴を更新
                     if (redoneText != null) {
-                        text = redoneText
+                        doc = doc.copy(text = redoneText)
                     }
 
                 })
@@ -106,10 +99,10 @@ fun main() = application {
 
             // エディタフィールド
             BasicTextField(
-                value = text,
+                value = doc.text,
                 onValueChange = {
-                    HistoryManager.pushState(text)
-                    text = it
+                    HistoryManager.pushState(doc)
+                    doc = doc.copy(text = it)
                 },
                 modifier = Modifier.fillMaxSize()
             )

@@ -2,61 +2,50 @@ package org.example.demo
 
 object HistoryManager {
 
-    private val undoStack = mutableListOf<String>()
-    private val redoStack = mutableListOf<String>()
 
-    fun pushState(text: String) {
-        undoStack.add(text)
-        redoStack.clear()
+    fun pushState(doc: Document) {
+        doc.undoStack.add(doc.text)
+        doc.redoStack.clear()
 
-        println("pushState: $text")
-        println("undoStack: $undoStack")
-        println("redoStack: $redoStack")
+        println("pushState: ${doc.text}")
+        println("undoStack: $doc.undoStack")
+        println("redoStack: ${doc.redoStack}")
     }
 
-    fun undo(currentText: String): String? {
+    // TODO: ショートカットキーとの競合解消
+    fun undo(doc: Document): String? {
         // undo可否の確認
-        if(undoStack.isEmpty()){
+        if(doc.undoStack.isEmpty()){
             return null
         }
 
-        println("undoStack: $undoStack")
-        println("redoStack: $redoStack")
+        println("undoStack: $doc.undoStack")
+        println("redoStack: $doc.redoStack")
 
-        redoStack.add(currentText)
+        doc.redoStack.add(doc.text)
 
-        println("after undoStack: $undoStack")
-        println("after redoStack: $redoStack")
+        println("after undoStack: $doc.undoStack")
+        println("after redoStack: $doc.redoStack")
 
-        return undoStack.removeLast()
+        return doc.undoStack.removeLast()
     }
 
-    fun redo(currentText: String): String? {
+    fun redo(doc: Document): String? {
         //redo可否の確認
-        if(redoStack.isEmpty()){
+        if(doc.redoStack.isEmpty()){
             return null
         }
 
-        println("undoStack: $undoStack")
-        println("redoStack: $redoStack")
+        println("undoStack: $doc.undoStack")
+        println("redoStack: $doc.redoStack")
 
-        undoStack.add(currentText)
+        doc.undoStack.add(doc.text)
 
-        println("after undoStack: $undoStack")
-        println("after redoStack: $redoStack")
+        println("after undoStack: $doc.undoStack")
+        println("after redoStack: ${doc.redoStack}")
 
-        return redoStack.removeLast()
+        return doc.redoStack.removeLast()
 
     }
 
-    fun clearHistory() {
-        // undoStackを空にする（0523時点では履歴管理はApp）
-        undoStack.clear()
-        // redoStackを空にする（上に同じ）
-        redoStack.clear()
-
-        println("history cleared")
-        println("before undo: $undoStack")
-        println("before redo: $redoStack")
-    }
 }
