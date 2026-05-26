@@ -16,6 +16,9 @@ import androidx.compose.ui.window.application
 import org.example.demo.FileLoad.openFile
 import org.example.demo.FileSave.overwriteSave
 import org.example.demo.FileSave.saveAs
+import org.example.demo.editor.layout.LineBreaker
+import org.example.demo.editor.view.EditorView
+import org.example.demo.editor.view.TextView
 
 
 fun main() = application {
@@ -96,16 +99,15 @@ fun main() = application {
                 {Text("元に戻す")}
             }
 
+            // 表示行定数の設定
+            val visualLines = LineBreaker.buildVisualLines(doc.text)
 
             // エディタフィールド
-            BasicTextField(
-                value = doc.text,
-                onValueChange = {
-                    HistoryManager.pushState(doc)
-                    doc = doc.copy(text = it)
-                },
-                modifier = Modifier.fillMaxSize()
+            EditorView(
+                doc = doc,
+                onDocumentChange = {doc = it}
             )
+
         }
     }
 }
