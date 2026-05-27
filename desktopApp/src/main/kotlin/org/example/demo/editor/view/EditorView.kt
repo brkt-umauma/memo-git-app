@@ -39,6 +39,8 @@ fun EditorView(
                 fontSize = 16.sp
             ),
 
+            visualTransformation = FixedWidthVisualTransformation(),
+
             modifier = Modifier.width(400.dp)
         )
 
