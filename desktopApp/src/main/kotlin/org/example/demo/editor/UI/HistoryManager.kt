@@ -1,4 +1,6 @@
-package org.example.demo
+package org.example.demo.editor.UI
+
+import org.example.demo.editor.document.Document
 
 object HistoryManager {
 
