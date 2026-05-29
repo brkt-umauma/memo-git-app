@@ -1,4 +1,4 @@
-package org.example.demo
+package org.example.demo.editor.UI
 
 import java.awt.FileDialog
 import java.awt.Frame
@@ -69,7 +69,7 @@ object FileSave {
     fun overwriteSave(currentFilePath: String?, text: String): String? {
 
         if (currentFilePath != null) {
-            FileSave.saveText(currentFilePath, text)
+            saveText(currentFilePath, text)
 
             // 戻り値がパス = パスというstate＝ファイルの状態を返す
             return currentFilePath

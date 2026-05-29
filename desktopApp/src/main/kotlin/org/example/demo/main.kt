@@ -2,56 +2,82 @@ package org.example.demo
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import org.example.demo.FileLoad.openFile
-import org.example.demo.FileSave.overwriteSave
-import org.example.demo.FileSave.saveAs
+import org.example.demo.editor.UI.DirtyDialog
+import org.example.demo.editor.UI.DirtyDialog.confirmDiscard
+import org.example.demo.editor.UI.FileLoad.openFile
+import org.example.demo.editor.UI.FileSave
+import org.example.demo.editor.UI.HistoryManager
+import org.example.demo.editor.document.Document
 import org.example.demo.editor.layout.LineBreaker
 import org.example.demo.editor.view.EditorView
-import org.example.demo.editor.view.TextView
 
 
 fun main() = application {
+    var doc by remember {
+        mutableStateOf(Document("", null, ""))
+    }
+
     Window(
-        onCloseRequest = ::exitApplication,
-        title = "Memo App",
+
+        onCloseRequest = {
+            if(confirmDiscard(doc)) {
+                exitApplication()
+            }
+        },
+        title = "Scristoria",
     ) {
 
-        var doc by remember {
-            mutableStateOf(Document("", null))
-        }
 
         Column {
 
             Row {
                 Button(onClick = {
-                    val savedPath = saveAs(doc.text)
+                    val savedPath = FileSave.saveAs(doc.text)
 
                     // パスを上書き：「ドキュメント」状態として記憶する
                     if (savedPath != null) {
-                        doc = doc.copy(currentFilePath = savedPath)
-                        println(doc.currentFilePath.toString())
+                        doc = doc.copy(
+                            currentFilePath = savedPath,
+                            savedText = doc.text)
                     }
                 })
-                { Text("保存") }
+                { Text("名前を付けて保存") }
 
 
                 Button(onClick = {
-                    val savedPath = overwriteSave(doc.currentFilePath, doc.text)
+                    val savedPath = FileSave.overwriteSave(
+                        doc.currentFilePath, doc.text
+                    )
 
                     // 上書き保存: currentFilePathにsavedPathを代入
                     if (savedPath != null) {
-                        doc = doc.copy(currentFilePath = savedPath)
+
+                        val savedDoc = doc.copy(
+                            currentFilePath = savedPath,
+                            savedText = doc.text
+                        )
+
+                        println(
+                            "text=${savedDoc.text}"
+                        )
+
+                        println(
+                            "saved=${savedDoc.savedText}"
+                        )
+
+                        println(
+                            "dirty=${savedDoc.isDirty}"
+                        )
+
+                        doc = savedDoc
                     }
                 })
                 { Text("上書き保存") }
@@ -67,7 +93,8 @@ fun main() = application {
 
                         doc = Document(
                             text = result.first,
-                            currentFilePath = result.second
+                            currentFilePath = result.second,
+                            savedText = result.first
                         )
 
                         println("FILE OPENED")

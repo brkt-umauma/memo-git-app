@@ -9,8 +9,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.example.demo.Document
-import org.example.demo.HistoryManager
+import org.example.demo.editor.document.Document
+import org.example.demo.editor.UI.HistoryManager
 import org.example.demo.editor.layout.LineBreaker
 import androidx.compose.foundation.layout.Row
 
@@ -31,7 +31,14 @@ fun EditorView(
             onValueChange = {
                 HistoryManager.pushState(doc)
 
-                onDocumentChange(doc.copy(text = it))
+                val newDoc =
+                    doc.copy(text = it)
+
+                println(
+                    "INPUT dirty=${newDoc.isDirty}"
+                )
+
+                onDocumentChange(newDoc)
             },
 
             textStyle = TextStyle(
@@ -39,7 +46,7 @@ fun EditorView(
                 fontSize = 16.sp
             ),
 
-            visualTransformation = FixedWidthVisualTransformation(),
+           // visualTransformation = FixedWidthVisualTransformation(),
 
             modifier = Modifier.width(400.dp)
         )
