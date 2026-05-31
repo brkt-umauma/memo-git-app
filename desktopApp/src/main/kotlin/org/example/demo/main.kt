@@ -16,17 +16,26 @@ import org.example.demo.editor.UI.FileLoad.openFile
 import org.example.demo.editor.UI.FileSave
 import org.example.demo.editor.UI.HistoryManager
 import org.example.demo.editor.document.Document
+import org.example.demo.editor.document.DocumentManager
 import org.example.demo.editor.layout.LineBreaker
 import org.example.demo.editor.view.EditorView
 
 
 fun main() = application {
-    var doc by remember {
-        mutableStateOf(Document("", null, ""))
+
+    // documentManager呼び出し
+    val documentManger = remember {
+        DocumentManager().apply { createDocument() }
     }
 
-    Window(
+    // ドキュメントの初期化
+    var doc by remember {
+        mutableStateOf(documentManger.activeDocument!!)
+    }
 
+
+
+    Window(
         onCloseRequest = {
             if(confirmDiscard(doc)) {
                 exitApplication()
@@ -39,14 +48,26 @@ fun main() = application {
         Column {
 
             Row {
+
+                Button(onClick = {
+                    // 未保存時警告ダイアログを表示
+                    if(!confirmDiscard(doc)){
+                        return@Button
+                    }
+
+                    documentManger.createDocument()
+                    doc = documentManger.activeDocument!!
+
+                })
+                {Text("新規")}
+
                 Button(onClick = {
                     val savedPath = FileSave.saveAs(doc.text)
 
                     // パスを上書き：「ドキュメント」状態として記憶する
                     if (savedPath != null) {
-                        doc = doc.copy(
-                            currentFilePath = savedPath,
-                            savedText = doc.text)
+                        documentManger.markSaved(savedPath)
+                        doc = documentManger.activeDocument!!
                     }
                 })
                 { Text("名前を付けて保存") }
@@ -60,30 +81,32 @@ fun main() = application {
                     // 上書き保存: currentFilePathにsavedPathを代入
                     if (savedPath != null) {
 
-                        val savedDoc = doc.copy(
-                            currentFilePath = savedPath,
-                            savedText = doc.text
-                        )
+                        documentManger.markSaved(savedPath)
+                        doc = documentManger.activeDocument!!
 
-                        println(
-                            "text=${savedDoc.text}"
-                        )
+//                        println(
+//                            "text=${savedDoc.text}"
+//                        )
+//
+//                        println(
+//                            "saved=${savedDoc.savedText}"
+//                        )
+//
+//                        println(
+//                            "dirty=${savedDoc.isDirty}"
+//                        )
 
-                        println(
-                            "saved=${savedDoc.savedText}"
-                        )
-
-                        println(
-                            "dirty=${savedDoc.isDirty}"
-                        )
-
-                        doc = savedDoc
                     }
                 })
                 { Text("上書き保存") }
 
 
                 Button(onClick = {
+                    // 未保存時警告ダイアログを表示
+                    if(!confirmDiscard(doc)){
+                        return@Button
+                    }
+
                     val result = openFile()
 
                     // 読み込み
@@ -91,11 +114,12 @@ fun main() = application {
                     // 二つ目の戻り値をパスとして状態に持つ
                     if (result != null) {
 
-                        doc = Document(
-                            text = result.first,
-                            currentFilePath = result.second,
-                            savedText = result.first
+                        documentManger.openDocument(
+                            result.first,
+                            result.second
                         )
+
+                        doc = documentManger.activeDocument!!
 
                         println("FILE OPENED")
                         println(result.second)
@@ -104,23 +128,17 @@ fun main() = application {
                 { Text("開く") }
 
                 Button(onClick = {
-                    val undoneText = HistoryManager.undo(doc)
+                    HistoryManager.undo(documentManger)
 
-                    // undoneTextがnullでない場合に履歴を更新
-                    // つまりtextに代入
-                    if (undoneText != null) {
-                        doc = doc.copy(text = undoneText)
-                    }
+                    doc = documentManger.activeDocument!!
+
                 })
                 {Text("取り消し")}
 
                 Button(onClick = {
-                    val redoneText = HistoryManager.redo(doc)
+                     HistoryManager.redo(documentManger)
 
-                    // redoneTextがnullでない場合に履歴を更新
-                    if (redoneText != null) {
-                        doc = doc.copy(text = redoneText)
-                    }
+                     doc = documentManger.activeDocument!!
 
                 })
                 {Text("元に戻す")}
@@ -132,7 +150,10 @@ fun main() = application {
             // エディタフィールド
             EditorView(
                 doc = doc,
-                onDocumentChange = {doc = it}
+                onDocumentChange = { updated ->
+                    documentManger.updateActiveDocument { updated }
+                    doc = documentManger.activeDocument!!
+                }
             )
 
         }

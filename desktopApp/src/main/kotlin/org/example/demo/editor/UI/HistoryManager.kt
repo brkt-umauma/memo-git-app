@@ -1,6 +1,7 @@
 package org.example.demo.editor.UI
 
 import org.example.demo.editor.document.Document
+import org.example.demo.editor.document.DocumentManager
 
 object HistoryManager {
 
@@ -9,44 +10,41 @@ object HistoryManager {
         doc.undoStack.add(doc.text)
         doc.redoStack.clear()
 
-        println("pushState: ${doc.text}")
-        println("undoStack: $doc.undoStack")
-        println("redoStack: ${doc.redoStack}")
     }
 
     // TODO: ショートカットキーとの競合解消
-    fun undo(doc: Document): String? {
+    fun undo(manager: DocumentManager) {
         // undo可否の確認
-        if(doc.undoStack.isEmpty()){
-            return null
-        }
+        val doc = manager.activeDocument ?: return
 
-        println("undoStack: $doc.undoStack")
-        println("redoStack: $doc.redoStack")
+        if(doc.undoStack.isEmpty()){
+            return
+        }
 
         doc.redoStack.add(doc.text)
 
-        println("after undoStack: $doc.undoStack")
-        println("after redoStack: $doc.redoStack")
+        val previousText = doc.undoStack.removeLast()
 
-        return doc.undoStack.removeLast()
+        manager.updateActiveDocument {
+            it.copy(text=previousText)
+        }
     }
 
-    fun redo(doc: Document): String? {
+    fun redo(manager: DocumentManager) {
         //redo可否の確認
-        if(doc.redoStack.isEmpty()){
-            return null
-        }
+        val doc = manager.activeDocument ?: return
 
-        println("undoStack: $doc.undoStack")
-        println("redoStack: $doc.redoStack")
+        if (doc.redoStack.isEmpty()){
+            return
+        }
 
         doc.undoStack.add(doc.text)
 
-        println("after undoStack: $doc.undoStack")
-        println("after redoStack: ${doc.redoStack}")
+        val redoneText = doc.redoStack.removeLast()
 
-        return doc.redoStack.removeLast()
+        manager.updateActiveDocument {
+            it.copy(text = redoneText)
+        }
 
     }
 
